@@ -1,193 +1,84 @@
 ---
 name: human-recon-gh-pages-updater
 description: >
-  Updates the human reconstruction paper library GitHub Pages site (docs/index.html)
-  by converting a human-recon-paper-analyzer output into a correctly formatted
-  JavaScript entry and inserting it into the PAPERS[] array in index.html.
-  Use this skill whenever the user says "add this paper to the site", "update the
-  library", "add to GitHub Pages", or pastes a paper analysis and wants it published.
-  Designed to run inside GitHub Copilot (VS Code) with access to the repo, or in
-  any Claude session where index.html is provided as context.
+  Inserts a pre-built JS paper object (produced by human-recon-paper-analyzer) into
+  the PAPERS[] array in docs/index.html and pushes the change so GitHub Actions
+  deploys it. Use this skill whenever the user says "add this paper to the site",
+  "update the library", or pastes a JS block from the analyzer skill.
+  Designed to run inside GitHub Copilot (VS Code) with full repo access.
 ---
 
 # Human Reconstruction GitHub Pages Updater
 
 ## Purpose
-Take the structured analysis output from `human-recon-paper-analyzer` and translate
-it into a valid JavaScript object entry in the `PAPERS[]` array inside `docs/index.html`.
-The site renders entirely from that array — this is the only file that ever needs editing.
+Take the `javascript // PASTE INTO PAPERS[]` block produced by `human-recon-paper-analyzer`
+and insert it into the `PAPERS[]` array in `docs/index.html`. No re-interpretation of
+taxonomy values — the analyzer has already done all the work.
 
 ---
 
-## Required Inputs
-Before making any edits, confirm you have:
-
-1. **The paper analysis** — the full taxonomy output from `human-recon-paper-analyzer`
-   (the markdown block with the 20-dimension table + novel concepts + proposed dimensions)
-2. **`docs/index.html`** — the current site file, either open in the editor or pasted in
-
-If either is missing, ask the user to provide it.
+## Required Input
+A fenced code block labelled `javascript // PASTE INTO PAPERS[]` from the analyzer skill.
+If the user hasn't provided it, ask: *"Please paste the JS block from the analyzer output."*
+Do **not** accept a markdown `<details>` registry entry as a substitute — those are for
+`paper_registry.md` only. The JS block is the only input this skill needs.
 
 ---
 
 ## Workflow
 
-### Step 1: Parse the Analysis
-From the paper analyzer output, extract:
-
-| Field | Where to find it |
-|-------|-----------------|
-| `title` | `<summary>` tag — the bold paper title |
-| `authors` | `<summary>` tag — after the em dash |
-| `venue` | `<summary>` tag — venue name |
-| `year` | `<summary>` tag — year number |
-| `dateAdded` | `> **Date Added:**` line → convert to YYYY-MM-DD |
-| `arxiv` | `> **Link / arXiv:**` line |
-| `projectPage` | `> **Link / arXiv:**` line if it's a project URL, not arXiv |
-| `tldr` | `> **TL;DR:**` line — strip the prefix |
-| taxonomy rows | The 20-row markdown table — map to JS object keys (see mapping below) |
-| `novelConcepts` | Bullet points under `### Novel / Out-of-Taxonomy Concepts` |
-| `proposedDimensions` | Rows in the `### Proposed New Taxonomy Dimensions` table |
-
-### Step 2: Derive the `id`
-Generate a slug from the paper title and year:
-- Take first meaningful word of title + last word + year
-- Lowercase, hyphens only, no special chars
-- Examples: `"GaussianAvatar: Towards Realistic Human Avatars, 2023"` → `"gaussianavatar-2023"`
-- If unsure, ask the user to confirm
-
-### Step 3: Derive the `tags` array
-Set tags based on taxonomy values:
-- `"relightable"` → if Relightability row is NOT "N/A"
-- `"physics"` → if Physics/Simulation row is NOT "N/A"
-- `"editable"` → if Appearance Editability row is NOT "N/A"
-- `"realtime"` → if Inference Speed mentions FPS > 20 or "real-time"
-- `"monocular"` → if Multi-view vs Mono mentions "monocular"
-
-### Step 4: Build the JS Object
-Produce exactly this format — pay close attention to escaping:
-
-```javascript
-{
-  id: "SLUG",
-  title: "FULL TITLE",
-  authors: "First Author et al.",
-  venue: "VENUE",
-  year: YEAR,
-  dateAdded: "YYYY-MM-DD",
-  arxiv: "URL_OR_NULL",
-  projectPage: "URL_OR_NULL",
-  tldr: "One sentence. No quotes that would break JS strings — escape with \\' if needed.",
-  tags: ["tag1", "tag2"],
-  taxonomy: {
-    "Body Model":               "...",
-    "Gaussian Repr.":           "...",
-    "Canonical Init.":          "...",
-    "FK / LBS":                 "...",
-    "Deformation Field":        "...",
-    "Pose Conditioning":        "...",
-    "Densification / Pruning":  "...",
-    "Loss Functions":           "...",
-    "Dynamic Prop. Prediction": "...",
-    "Relightability":           "...",
-    "Appearance Editability":   "...",
-    "UV / Gaussian Mapping":    "...",
-    "Cloth / Hair":             "...",
-    "Physics / Simulation":     "...",
-    "Multi-view vs Mono":       "...",
-    "Training Data Req.":       "...",
-    "Inference Speed":          "...",
-    "Datasets & Baselines":     "..."
-  },
-  novelConcepts: [
-    "Concept one description",
-    "Concept two description"
-  ],
-  proposedDimensions: [
-    { name: "Dimension Name", definition: "One-line def.", answer: "This paper's value", backfill: true }
-  ]
-},
-```
-
-**String escaping rules:**
-- Use double quotes for all JS string values
-- Escape any double quotes inside values with `\"`
-- Escape any backticks with `\``
-- If a field is absent/null, use `null` (no quotes)
-- If `novelConcepts` is empty, use `[]`
-- If `proposedDimensions` is empty, use `[]`
-
-### Step 5: Taxonomy Key Mapping
-Map from the markdown table's left column to the exact JS key:
-
-| Markdown dimension name | JS taxonomy key |
-|------------------------|-----------------|
-| Body Model | `"Body Model"` |
-| Gaussian Representation | `"Gaussian Repr."` |
-| Canonical Space Gaussian Placement / Initialization | `"Canonical Init."` |
-| Forward Kinematics / LBS Approach | `"FK / LBS"` |
-| Deformation Field Architecture | `"Deformation Field"` |
-| Pose Conditioning Method | `"Pose Conditioning"` |
-| Densification / Pruning Strategy | `"Densification / Pruning"` |
-| Loss Functions | `"Loss Functions"` |
-| Dynamic / Neural Property Prediction | `"Dynamic Prop. Prediction"` |
-| Relightability | `"Relightability"` |
-| Appearance Editability / Custom Texture | `"Appearance Editability"` |
-| UV / Gaussian Mapping | `"UV / Gaussian Mapping"` |
-| Cloth / Hair / Loose Garment Handling | `"Cloth / Hair"` |
-| Physics / Cloth Simulation | `"Physics / Simulation"` |
-| Multi-view vs Monocular | `"Multi-view vs Mono"` |
-| Number of Training Frames / Data Requirements | `"Training Data Req."` |
-| Inference / Rendering Speed | `"Inference Speed"` |
-| Datasets & Baselines | `"Datasets & Baselines"` |
-| Reconstruction Target | `"Reconstruction Target"` |
-| Texture Continuity / Editability Mechanism | `"Texture Continuity"` |
-
-If the paper's analysis contains **additional adopted taxonomy dimensions** (ones the user
-decided to keep from a prior proposed-dimensions suggestion), add them to the taxonomy
-object with their exact adopted key name after the 18 standard keys.
-
-### Step 6: Insert into index.html
-
-Locate the `PAPERS` array in `index.html`. It lives inside the `<script id="paper-data">` tag:
+### Step 1: Read docs/index.html
+Open `docs/index.html` from the repo. Locate the `<script id="paper-data">` tag.
+Inside it, find the `PAPERS` array opening:
 
 ```javascript
 const PAPERS = [
-  /* existing entries */
-];
 ```
 
-**Insertion rule:** Add the new object at the **beginning** of the array (after the opening `[`),
-so the most recently added paper appears first on the page.
+### Step 2: Find the insertion point
+The new entry goes at the **very beginning** of the array so the newest paper appears
+first on the site.
 
-Insert immediately after `const PAPERS = [`, before any existing entries. If there's an
-example entry comment block at the top, insert after the closing `*/` of that comment.
+- If the array is empty (only the example comment block), insert after the `*/` that
+  closes the example comment.
+- If the array already has entries, insert before the first `{`.
+- Never reorder or touch existing entries.
 
-Do **not** touch anything outside the `<script id="paper-data">` block.
+### Step 3: Insert the JS object
+Paste the object exactly as provided by the analyzer. Do not reformat, re-escape,
+or summarise any values. Ensure there is a trailing comma after the closing `}` of
+the new entry if any entries follow it.
 
-### Step 7: Verify
+### Step 4: Verify
+Quick sanity checks before saving:
+- `PAPERS` array brackets are balanced
+- New entry has a trailing comma if it's not the last item
+- No raw unescaped double quotes inside string values
+- `null` (not `"null"`) for absent URLs
+- All 20 taxonomy keys are present
 
-After inserting, do a quick sanity check:
-- The `PAPERS` array is still valid JS (brackets balanced, trailing commas correct)
-- The new entry has all 20 taxonomy keys
-- No raw double quotes inside string values (they'd break JSON parsing)
-- `null` (not `"null"`) used for absent URLs
+### Step 5: Commit and push
+Run:
+```bash
+git add docs/index.html
+git commit -m "add: <paper title> <VENUE> <YEAR>"
+git push
+```
+GitHub Actions will deploy automatically within ~1 minute.
 
-### Step 8: Report to User
-
+### Step 6: Report to user
 Tell the user:
-1. ✅ Paper added: **[title]**
-2. 📋 Tags assigned: `[list]`
-3. ⚠️ Any proposed new dimensions that need backfilling across existing entries
-4. 📝 Next step: review the change in VS Code / your editor, then `git commit` and `git push`
-   — GitHub Actions will deploy automatically.
+1. ✅ **Paper added:** [title]
+2. 🏷️ **Tags:** [list from the object's tags array]
+3. ⚠️ **Proposed dimensions needing backfill** (if `proposedDimensions` array is non-empty — list the dimension names)
+4. 🚀 **Deploying** — live at `https://sajal-sony.github.io/GSA_paperlist/` in ~1 min
 
 ---
 
 ## Important Notes
-- **Never reformat or reorder existing entries** in the PAPERS array
 - **Never edit anything outside** `<script id="paper-data">...</script>`
-- If a taxonomy value contains line breaks, collapse to a single line with ` · ` as separator
-- If `arxiv` and `projectPage` are both available, populate both fields
-- If only one link is available, set the other to `null`
-- The `tldr` field must be plain text — no markdown, no asterisks, no backticks
+- **Never reformat or reorder existing entries**
+- `paper_registry.md` is a separate human-readable log — this skill does not touch it
+- If the user provides a markdown `<details>` block instead of a JS block, tell them
+  to re-run the analyzer in Claude.ai and copy the JS block it outputs at the end
+

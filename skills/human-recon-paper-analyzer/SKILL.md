@@ -75,6 +75,75 @@ so the registry file stays scannable over time.
 Save the formatted entry to `paper_registry.md` in the current working directory.
 If the file doesn't exist yet, create it with a header. If it exists, append to the end.
 
+### Step 6: Output a Ready-to-Paste JS Object
+**This is the critical step that makes the updater skill work without any re-interpretation.**
+
+After the `<details>` block, output a second fenced code block labelled
+`javascript // PASTE INTO PAPERS[]` containing the fully-formed JS object entry.
+Rules for this block:
+- All taxonomy values are **single-line strings** — collapse any multi-line prose with ` · ` as separator
+- Use **exactly** the JS key names from the mapping table below — not the long markdown dimension names
+- Escape all double quotes inside string values with `\"`; never use single quotes as delimiters
+- Use `null` (no quotes) for absent URLs
+- `tags` array derived automatically: `"relightable"` if Relightability ≠ N/A, `"physics"` if Physics ≠ N/A, `"editable"` if Appearance Editability ≠ N/A, `"realtime"` if FPS > 20 or "real-time" mentioned, `"monocular"` if monocular mentioned
+- `id` slug: first meaningful word of title + last word of title + year, all lowercase hyphens
+
+**JS key mapping (markdown dimension → JS key):**
+
+| Markdown dimension | JS key |
+|--------------------|--------|
+| Body Model | `"Body Model"` |
+| Gaussian Representation | `"Gaussian Repr."` |
+| Canonical Initialization | `"Canonical Init."` |
+| FK / LBS Approach | `"FK / LBS"` |
+| Deformation Field | `"Deformation Field"` |
+| Pose Conditioning | `"Pose Conditioning"` |
+| Densification / Pruning | `"Densification / Pruning"` |
+| Loss Functions | `"Loss Functions"` |
+| Dynamic Property Prediction | `"Dynamic Prop. Prediction"` |
+| Relightability | `"Relightability"` |
+| Appearance Editability | `"Appearance Editability"` |
+| UV / Gaussian Mapping | `"UV / Gaussian Mapping"` |
+| Cloth / Hair Handling | `"Cloth / Hair"` |
+| Physics / Simulation | `"Physics / Simulation"` |
+| Multi-view vs Monocular | `"Multi-view vs Mono"` |
+| Training Data Requirements | `"Training Data Req."` |
+| Inference Speed | `"Inference Speed"` |
+| Datasets & Baselines | `"Datasets & Baselines"` |
+| Reconstruction Target | `"Reconstruction Target"` |
+| Texture Continuity / Editability | `"Texture Continuity"` |
+
+**Example output block:**
+
+````
+```javascript // PASTE INTO PAPERS[]
+{
+  id: "fate-2025",
+  title: "FATE: Full-head Gaussian Avatar with Textural Editing from Monocular Video",
+  authors: "Zhang et al.",
+  venue: "arXiv",
+  year: 2025,
+  dateAdded: "2026-03-05",
+  arxiv: "https://arxiv.org/abs/2411.15604",
+  projectPage: null,
+  tldr: "Monocular head avatar via 3DGS with sampling-based densification and a neural baking stage that converts Gaussians into editable UV attribute maps.",
+  tags: ["editable", "realtime", "monocular"],
+  taxonomy: {
+    "Body Model":               "FLAME with learnable ΔE / ΔP blendshapes on top of standard basis.",
+    "Gaussian Repr.":           "Standard 3DGS; each Gaussian has position in UV space, axis-angle rotation, scale, opacity, 0th-order SH color, and scalar normal offset d.",
+    ...all 20 keys...
+  },
+  novelConcepts: [
+    "Neural baking as signal-processing: f(p)=(F*H*B)(p) frames BakeNet as pre-filter H composed with bilinear interpolation B."
+  ],
+  proposedDimensions: []
+},
+```
+````
+
+Always emit this block even if you also write the `<details>` registry entry.
+Tell the user: **"Copy the JS block above and hand it to the `human-recon-gh-pages-updater` skill in GitHub Copilot."**
+
 ---
 
 ## The 20-Dimension Taxonomy

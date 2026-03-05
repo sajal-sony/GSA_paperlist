@@ -23,7 +23,7 @@ The site renders entirely from that array — this is the only file that ever ne
 Before making any edits, confirm you have:
 
 1. **The paper analysis** — the full taxonomy output from `human-recon-paper-analyzer`
-   (the markdown block with the 18-dimension table + novel concepts + proposed dimensions)
+   (the markdown block with the 20-dimension table + novel concepts + proposed dimensions)
 2. **`docs/index.html`** — the current site file, either open in the editor or pasted in
 
 If either is missing, ask the user to provide it.
@@ -45,7 +45,7 @@ From the paper analyzer output, extract:
 | `arxiv` | `> **Link / arXiv:**` line |
 | `projectPage` | `> **Link / arXiv:**` line if it's a project URL, not arXiv |
 | `tldr` | `> **TL;DR:**` line — strip the prefix |
-| taxonomy rows | The 18-row markdown table — map to JS object keys (see mapping below) |
+| taxonomy rows | The 20-row markdown table — map to JS object keys (see mapping below) |
 | `novelConcepts` | Bullet points under `### Novel / Out-of-Taxonomy Concepts` |
 | `proposedDimensions` | Rows in the `### Proposed New Taxonomy Dimensions` table |
 
@@ -140,6 +140,8 @@ Map from the markdown table's left column to the exact JS key:
 | Number of Training Frames / Data Requirements | `"Training Data Req."` |
 | Inference / Rendering Speed | `"Inference Speed"` |
 | Datasets & Baselines | `"Datasets & Baselines"` |
+| Reconstruction Target | `"Reconstruction Target"` |
+| Texture Continuity / Editability Mechanism | `"Texture Continuity"` |
 
 If the paper's analysis contains **additional adopted taxonomy dimensions** (ones the user
 decided to keep from a prior proposed-dimensions suggestion), add them to the taxonomy
@@ -167,7 +169,7 @@ Do **not** touch anything outside the `<script id="paper-data">` block.
 
 After inserting, do a quick sanity check:
 - The `PAPERS` array is still valid JS (brackets balanced, trailing commas correct)
-- The new entry has all 18 taxonomy keys
+- The new entry has all 20 taxonomy keys
 - No raw double quotes inside string values (they'd break JSON parsing)
 - `null` (not `"null"`) used for absent URLs
 

@@ -678,7 +678,7 @@
           <div class="stat-label">Papers</div>
         </div>
         <div class="stat">
-          <div class="stat-value" id="dim-count">18</div>
+          <div class="stat-value" id="dim-count">20</div>
           <div class="stat-label">Dimensions</div>
         </div>
         <div class="stat">
@@ -745,6 +745,48 @@
 ════════════════════════════════════════════════════ -->
 <script id="paper-data">
 const PAPERS = [
+  {
+    id: "fate-2025",
+    title: "FATE: Full-head Gaussian Avatar with Textural Editing from Monocular Video",
+    authors: "Zhang et al.",
+    venue: "arXiv",
+    year: 2025,
+    dateAdded: "2026-03-05",
+    arxiv: "https://arxiv.org/abs/2411.15604",
+    projectPage: null,
+    tldr: "Monocular-video head avatar reconstruction using 3DGS with sampling-based densification, a neural baking stage (BakeNet) that converts discrete Gaussians into continuous UV attribute maps for direct texture editing, and a universal SphereHead-based completion framework for 360° full-head appearance.",
+    tags: ["editable", "realtime", "monocular"],
+    taxonomy: {
+      "Body Model":               "FLAME with learnable personalized expression blendshapes ΔE and pose blendshapes ΔP on top of the standard FLAME basis. Laplacian smoothing and L2-to-FLAME regularization applied to stabilize the mesh.",
+      "Gaussian Repr.":           "Standard 3DGS. Each Gaussian: position in UV space, local rotation (axis-angle), local scale, opacity, 0th-order SH color, scalar normal offset d. Local rotation/scale composed with parent triangle rotation R and scale k to yield global covariance.",
+      "Canonical Init.":          "Uniform sampling in FLAME UV space at ~65k Gaussians. Each sample has barycentric coordinates {w0,w1,w2} and face index f; position recovered via UV mapping M(p) + d·n_f.",
+      "FK / LBS":                 "Standard FLAME LBS: T = LBS(B_P(Θ; P+ΔP) + B_E(Ψ; E+ΔE)). Gaussians rigidly bound to mesh triangles, inheriting triangle rotation R and scale k. No dual-quaternion or learned blend weights.",
+      "Deformation Field":        "None on top of LBS. Personalization via learnable linear blendshapes ΔE, ΔP. Scalar offset d along face normal is a static learnable parameter, not a neural field.",
+      "Pose Conditioning":        "FLAME expression Ψ and pose Θ coefficients estimated per-frame by MICA tracker or DECA pipeline; directly drive the FLAME mesh blendshape equation.",
+      "Densification / Pruning":  "Sampling-based densification: gradient magnitude used as importance score for multinomial sampling; new Gaussians spawned with random barycentric coords on selected face. 1k added every 3k iters. Pruning by opacity < 5×10⁻³ every 2k iters; opacity reset every 6k iters. Final ~30k–58k Gaussians.",
+      "Loss Functions":           "L_L1 + 0.1·L_vgg + 100·L_lap + 100·L_flame + 0.1·L_scale. During neural baking: same losses plus optional attribute regularization L_V and rotation regularization L_R.",
+      "Dynamic Prop. Prediction": "Static in canonical space. All Gaussian attributes are per-Gaussian learnable parameters — no per-frame network predicts them.",
+      "Relightability":           "N/A — 0th-order SH only; assumes uniform lighting throughout the monocular video.",
+      "Appearance Editability":   "Yes via neural baking (BakeNet): a U-Net takes Gaussian-noise maps as input and outputs continuous 11-channel attribute maps (3 scale, 3 rotation, 3 color, 1 opacity, 1 offset) in 512×512 FLAME UV space, enabling sticker overlay, style transfer, and texture swapping.",
+      "UV / Gaussian Mapping":    "FLAME's predefined UV parameterization. Gaussians sampled uniformly in UV space and mapped to 3D via FLAME UV mapping M(·). Same UV enables neural baking into 512×512 attribute maps.",
+      "Cloth / Hair":             "Partial — hair handled implicitly by Gaussians with normal offsets. Long hair is a failure mode for neural baking. Rear-head hair/appearance completed via SphereHead PTI completion framework.",
+      "Physics / Simulation":     "N/A",
+      "Multi-view vs Mono":       "Monocular video at training time. Completion uses pseudo-multi-view images from SphereHead PTI — no real multi-view capture required.",
+      "Training Data Req.":       "Monocular portrait videos. 20 subjects across 4 datasets (INSTA, PointAvatar, NerFace, EmoTalk3D). Fully person-specific optimization — no cross-subject generalization.",
+      "Inference Speed":          "~203–229 FPS on A6000 GPU. Training ~0.5–4.5h. Optional neural baking adds ~0.5–1h; completion adds ~10–15min.",
+      "Datasets & Baselines":     "Datasets: INSTA (10 subjects), PointAvatar (3), NerFace (3), EmoTalk3D (4). Baselines: FlashAvatar (CVPR'24), SplattingAvatar (CVPR'24), MonoGaussianAvatar (SIGGRAPH'24), GaussianAvatars (CVPR'24). Best: PSNR 28.37 / SSIM 0.9439 / LPIPS 0.0586 (unbaked).",
+      "Reconstruction Target":    "Head-only, 360°. Frontal head from monocular video; rear/side appearance completed via SphereHead PTI. Claims first animatable full 360° monocular head avatar. Neck-and-below segmented out by design.",
+      "Texture Continuity":       "Yes — BakeNet (U-Net) produces continuous 512×512 11-channel attribute maps in FLAME UV space via f(p)=(F*H*B)(p). Standard texture workflows apply directly. Trade-off: ~0.1–1.3 PSNR drop vs unbaked depending on subject."
+    },
+    novelConcepts: [
+      "Neural baking as signal-processing: formulation f(p)=(F*H*B)(p) frames BakeNet as a pre-filter H composed with bilinear interpolation B, treating Gaussian discreteness as a reconstruction/sampling theory problem rather than a pure learning problem.",
+      "Universal completion framework via SphereHead PTI: method-agnostic pipeline (orbit render → landmark confidence filter → coordinate alignment → GFPGAN quality alignment → multi-image PTI → inverse transform → matting → cross-training mixup) demonstrated on all 4 baselines, not only FATE.",
+      "Sampling-based densification as importance sampling: reinterprets position gradient as importance weight for multinomial sampling, controlling Gaussian budget explicitly and avoiding frontal-view over-densification common in monocular settings.",
+      "Camera radius hack for SphereHead PTI: fixed head truncation caused by SphereHead's fixed intrinsics K by increasing camera radius 2.7→3.2 with equivalent coordinate transforms — a practical brittleness of integrating 3D-aware GANs with reconstruction pipelines.",
+      "Baking trade-off Pareto analysis: explicitly studies quality-vs-editability tension; baking all attributes degrades LPIPS, rotation regularization L_R helps editability at cost of PSNR — rare practitioner-oriented design-knob analysis."
+    ],
+    proposedDimensions: []
+  },
   /* ── EXAMPLE ENTRY (delete before publishing) ──
   {
     id: "example-2024",
@@ -975,7 +1017,8 @@ document.addEventListener('DOMContentLoaded', () => {
                           "Loss Functions", "Dynamic Prop. Prediction", "Relightability",
                           "Appearance Editability", "UV / Gaussian Mapping", "Cloth / Hair",
                           "Physics / Simulation", "Multi-view vs Mono", "Training Data Req.",
-                          "Inference Speed", "Datasets & Baselines"
+                          "Inference Speed", "Datasets & Baselines",
+                          "Reconstruction Target", "Texture Continuity"
                           — plus any additional keys for adopted proposed dimensions
   novelConcepts array   — strings, each is one novel observation
   proposedDimensions array — objects: { name, definition, answer, backfill: bool }

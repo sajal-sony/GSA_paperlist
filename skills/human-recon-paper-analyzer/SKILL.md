@@ -14,7 +14,7 @@ description: >
 
 ## Purpose
 Extract a structured, consistent analysis of any animatable Gaussian splatting /
-human reconstruction paper across a fixed 18-dimension taxonomy. Output is formatted
+human reconstruction paper across a fixed 20-dimension taxonomy. Output is formatted
 to be appended directly to the user's paper registry markdown file (`paper_registry.md`
 or equivalent). Novel concepts outside the taxonomy are flagged explicitly.
 
@@ -30,7 +30,7 @@ Read the full paper carefully. Focus on:
 - Any supplementary details visible in the document
 
 ### Step 2: Fill the Taxonomy
-Extract all 18 dimensions below. For each:
+Extract all 20 dimensions below. For each:
 - Be **concise and specific** — one to three sentences max per dimension
 - Use `N/A` if the paper genuinely does not address the dimension
 - Use `Not specified` if the paper likely has an approach but doesn't detail it
@@ -38,18 +38,18 @@ Extract all 18 dimensions below. For each:
 
 ### Step 3: Flag Novel Concepts
 After the taxonomy, add a **"Novel / Out-of-Taxonomy Concepts"** section.
-List anything technically interesting that doesn't fit the 18 dimensions —
+List anything technically interesting that doesn't fit the 20 dimensions —
 new training tricks, unusual data representations, surprising results, etc.
 These are the things worth flagging for the user to read manually.
 
 ### Step 3b: Mine for New Taxonomy Dimensions
-After filling the 18 dimensions, ask yourself: **does this paper introduce a
+After filling the 20 dimensions, ask yourself: **does this paper introduce a
 recurring technical concern that the current taxonomy has no home for?**
 
 Criteria for proposing a new dimension — it must be:
 1. A **distinct, nameable technical axis** (not just a detail within an existing dimension)
 2. Something a researcher would **consistently want to know** across future papers
-3. **Not already captured** by any of the 18 existing dimensions
+3. **Not already captured** by any of the 20 existing dimensions
 
 Good examples of what qualifies: "Generalization strategy (subject-specific vs. generalizable)",
 "Scene / background handling", "Animation retargeting capability".
@@ -77,7 +77,7 @@ If the file doesn't exist yet, create it with a header. If it exists, append to 
 
 ---
 
-## The 18-Dimension Taxonomy
+## The 20-Dimension Taxonomy
 
 ```
 1.  BODY MODEL
@@ -154,6 +154,19 @@ If the file doesn't exist yet, create it with a header. If it exists, append to 
     What datasets are used for evaluation?
     What are the main baseline methods compared against?
     Key metrics reported (PSNR, SSIM, LPIPS, FID, etc.)?
+
+19. RECONSTRUCTION TARGET
+    What body region does the method reconstruct?
+    (full body, upper body, head-only frontal, head 360°, hands, face-only, etc.)
+    Is the scope fixed by design or configurable?
+
+20. TEXTURE CONTINUITY / EDITABILITY MECHANISM
+    Does the method produce continuous, editable attribute maps (e.g. in UV space),
+    or are Gaussian attributes purely discrete per-point?
+    What mechanism ensures continuity? (CNN inductive bias, explicit smoothness loss,
+    generative decoder, none)
+    Can standard texture-editing workflows (sticker overlay, style transfer, painting)
+    be applied directly?
 ```
 
 ---
@@ -190,6 +203,8 @@ Produce exactly this structure:
 | Training Data Requirements | ... |
 | Inference Speed | ... |
 | Datasets & Baselines | ... |
+| Reconstruction Target | ... |
+| Texture Continuity / Editability | ... |
 
 ### Novel / Out-of-Taxonomy Concepts
 - [Concept 1]: Brief description of why it's interesting

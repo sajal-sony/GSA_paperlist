@@ -59,7 +59,7 @@ A personal, taxonomy-driven library of animatable Gaussian splatting and human r
 
 ## Taxonomy dimensions
 
-The site tracks 18 fixed dimensions per paper:
+The site tracks 20 fixed dimensions per paper:
 
 | # | Dimension |
 |---|-----------|
@@ -81,5 +81,7 @@ The site tracks 18 fixed dimensions per paper:
 | 16 | Training Data Requirements |
 | 17 | Inference Speed |
 | 18 | Datasets & Baselines |
+| 19 | Reconstruction Target |
+| 20 | Texture Continuity / Editability Mechanism |
 
 The analyzer skill also proposes new dimensions when it encounters something that doesn't fit. You decide whether to adopt them — if you do, backfill previous entries manually and add the new key to the taxonomy object in `index.html`.

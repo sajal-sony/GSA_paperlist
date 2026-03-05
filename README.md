@@ -3,7 +3,7 @@
 A personal, taxonomy-driven library of animatable Gaussian splatting and human reconstruction papers — published as a GitHub Pages site.
 
 ## 🔗 Live site
-`https://<your-username>.github.io/<repo-name>/`
+`https://sajal-sony.github.io/GSA_paperlist/`
 
 ---
 

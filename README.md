@@ -11,22 +11,17 @@ A personal, taxonomy-driven library of animatable Gaussian splatting and human r
 
 ### Adding a new paper
 
-1. **Analyze the paper** using the `human-recon-paper-analyzer` skill in Claude.ai or GitHub Copilot.
-   - Drop the PDF in, get back a structured 18-dimension analysis block.
+1. **Analyze the paper** using the `human-recon-paper-analyzer` skill in **Claude.ai**.
+   - Drop the PDF in, get back:
+     - A collapsible `<details>` registry entry — append this to `paper_registry.md` for your personal log.
+     - A `javascript // PASTE INTO PAPERS[]` block — this is what you hand to the updater skill.
 
-2. **Update the site** using the `human-recon-gh-pages-updater` skill in GitHub Copilot (or any Claude session with `docs/index.html` as context).
-   - Paste the analysis output + the skill instructions.
-   - The agent edits only the `PAPERS[]` array inside `docs/index.html`.
+2. **Update the site** using the `human-recon-gh-pages-updater` skill in **GitHub Copilot**.
+   - Paste only the JS block from step 1.
+   - Copilot inserts it at the top of `PAPERS[]` in `docs/index.html`, commits, and pushes.
+   - No manual git commands needed — the skill handles it.
 
-3. **Review and push.**
-   ```bash
-   git diff docs/index.html   # review the change
-   git add docs/index.html
-   git commit -m "add: PaperName et al. VENUE YEAR"
-   git push
-   ```
-
-4. GitHub Actions deploys automatically. Done.
+3. GitHub Actions deploys automatically within ~1 minute. Done.
 
 ---
 
@@ -38,9 +33,9 @@ A personal, taxonomy-driven library of animatable Gaussian splatting and human r
 │   └── index.html          ← The entire site. All paper data lives in PAPERS[] inside this file.
 ├── skills/
 │   ├── human-recon-paper-analyzer/
-│   │   └── SKILL.md        ← Skill 1: analyze a paper → structured taxonomy output
+│   │   └── SKILL.md        ← Skill 1 (Claude.ai): PDF → 20-dim analysis + ready-to-paste JS block
 │   └── human-recon-gh-pages-updater/
-│       └── SKILL.md        ← Skill 2: take analyzer output → update docs/index.html
+│       └── SKILL.md        ← Skill 2 (Copilot): paste JS block → insert into PAPERS[], commit, push
 └── .github/
     └── workflows/
         └── deploy.yml      ← Auto-deploy to GitHub Pages on push to main

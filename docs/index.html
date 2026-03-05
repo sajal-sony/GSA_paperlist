@@ -422,8 +422,10 @@
     .tag-mono   { color: var(--flamingo);border-color: color-mix(in srgb, var(--flamingo)30%, transparent); background: color-mix(in srgb, var(--flamingo)8%, transparent); }
     .tag-novel  { color: var(--pink);    border-color: color-mix(in srgb, var(--pink)    30%, transparent); background: color-mix(in srgb, var(--pink)    8%, transparent); }
 
-    /* ── Expandable taxonomy table ── */
-    .card-expand-btn {
+    /* ── Card view button ── */
+    .paper-card { cursor: pointer; }
+
+    .card-view-btn {
       width: 100%;
       background: var(--surface0);
       border: none;
@@ -440,59 +442,237 @@
       letter-spacing: 0.05em;
     }
 
-    .card-expand-btn:hover {
+    .card-view-btn:hover {
       background: var(--surface1);
-      color: var(--text);
+      color: var(--accent);
     }
 
-    .expand-arrow {
-      transition: transform 0.25s;
-      font-size: 10px;
-    }
-
-    .card-expand-btn.open .expand-arrow { transform: rotate(180deg); }
-
-    .taxonomy-panel {
+    /* ── Full-page detail modal ── */
+    #detail-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(17, 17, 27, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: none;
-      border-top: 1px solid var(--surface0);
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+    }
+
+    #detail-modal.open { display: flex; }
+
+    .modal-panel {
+      background: var(--mantle);
+      border: 1px solid var(--surface1);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 920px;
+      margin: auto;
+      animation: modalIn 0.2s ease both;
       overflow: hidden;
     }
 
-    .taxonomy-panel.open { display: block; }
-
-    .taxonomy-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .taxonomy-table tr {
+    .modal-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1.5rem;
       border-bottom: 1px solid var(--surface0);
-      transition: background 0.15s;
+      background: var(--crust);
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
 
-    .taxonomy-table tr:last-child { border-bottom: none; }
-    .taxonomy-table tr:hover { background: var(--surface0); }
-
-    .taxonomy-table td {
-      padding: 7px 1.25rem;
-      vertical-align: top;
-    }
-
-    .taxonomy-table td:first-child {
-      color: var(--overlay1);
+    .modal-breadcrumb {
       font-size: 11px;
-      letter-spacing: 0.05em;
-      white-space: nowrap;
-      width: 38%;
-      padding-right: 0.5rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--overlay0);
     }
 
-    .taxonomy-table td:last-child {
+    .modal-close {
+      background: var(--surface0);
+      border: 1px solid var(--surface1);
+      border-radius: 6px;
+      color: var(--overlay1);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 5px 12px;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--surface1);
+      color: var(--text);
+      border-color: var(--overlay1);
+    }
+
+    .modal-body {
+      padding: 2rem 2.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .modal-paper-header { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .modal-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .modal-date { font-size: 11px; color: var(--overlay0); }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-authors { font-size: 13px; color: var(--subtext0); }
+
+    .modal-tldr-wrap {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 0.9rem 1.2rem;
+    }
+
+    .modal-tldr-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+
+    .modal-tldr-text {
+      font-size: 13px;
       color: var(--subtext1);
+      line-height: 1.65;
     }
 
-    .na-cell { color: var(--surface2) !important; font-style: italic; }
+    .modal-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* ── Taxonomy sections in modal ── */
+    .modal-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .modal-section-title {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--surface0);
+    }
+
+    .tax-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+
+    .tax-item {
+      background: var(--surface0);
+      border: 1px solid var(--surface1);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      transition: border-color 0.15s;
+    }
+
+    .tax-item:hover { border-color: var(--overlay0); }
+    .tax-item.na { opacity: 0.38; }
+
+    .tax-key {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .tax-val {
+      font-size: 12.5px;
+      color: var(--subtext1);
+      line-height: 1.55;
+    }
+
+    .tax-val.na-val { color: var(--overlay0); font-style: italic; }
+
+    /* ── Novel concepts in modal ── */
+    .modal-novel-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .modal-novel-list li {
+      background: color-mix(in srgb, var(--pink) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--pink) 18%, transparent);
+      border-radius: 8px;
+      font-size: 12.5px;
+      color: var(--subtext1);
+      padding: 0.7rem 1rem 0.7rem 2rem;
+      line-height: 1.55;
+      position: relative;
+    }
+
+    .modal-novel-list li::before {
+      content: '✦';
+      position: absolute;
+      left: 0.7rem;
+      top: 0.75rem;
+      color: var(--pink);
+      font-size: 9px;
+    }
+
+    /* ── Proposed dims in modal ── */
+    .modal-proposed-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .modal-proposed-item {
+      background: color-mix(in srgb, var(--yellow) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--yellow) 18%, transparent);
+      border-radius: 8px;
+      font-size: 12.5px;
+      padding: 0.7rem 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+
+    @media (max-width: 640px) {
+      .tax-grid { grid-template-columns: 1fr; }
+      .modal-body { padding: 1.25rem 1.25rem 2rem; }
+    }
 
     /* ── Novel section ── */
     .novel-panel {
@@ -730,6 +910,17 @@
     <p>No papers match your search.</p>
   </div>
 
+  <!-- ── FULL-PAGE DETAIL MODAL ── -->
+  <div id="detail-modal" onclick="handleModalBackdrop(event)">
+    <div class="modal-panel" id="modal-panel">
+      <div class="modal-topbar">
+        <span class="modal-breadcrumb">Paper Details</span>
+        <button class="modal-close" onclick="closeDetail()">✕ close</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
   <!-- ── FOOTER ── -->
   <footer>
     <p>Built with the <a href="#">human-recon-paper-analyzer</a> skill · Powered by Claude ·
@@ -838,10 +1029,18 @@ function countNovel() {
   return PAPERS.reduce((n, p) => n + (p.novelConcepts?.length || 0), 0);
 }
 
+/* ── Taxonomy groupings for modal ── */
+const TAX_GROUPS = [
+  { label: 'Architecture',       color: 'var(--blue)',    keys: ['Body Model','Gaussian Repr.','Canonical Init.','FK / LBS','Deformation Field','Pose Conditioning'] },
+  { label: 'Training',           color: 'var(--green)',   keys: ['Densification / Pruning','Loss Functions','Training Data Req.'] },
+  { label: 'Properties',         color: 'var(--mauve)',   keys: ['Dynamic Prop. Prediction','Relightability','Appearance Editability','Texture Continuity'] },
+  { label: 'Surface & Geometry', color: 'var(--teal)',    keys: ['UV / Gaussian Mapping','Cloth / Hair','Physics / Simulation','Reconstruction Target'] },
+  { label: 'Evaluation',         color: 'var(--peach)',   keys: ['Multi-view vs Mono','Inference Speed','Datasets & Baselines'] },
+];
+
 function buildCard(paper, idx) {
   const delay = (idx % 20) * 40;
 
-  // Quick-tags
   const tagMap = {
     relightable: ['tag-relight', 'relightable'],
     physics:     ['tag-physics', 'physics sim'],
@@ -855,84 +1054,150 @@ function buildCard(paper, idx) {
     return `<span class="tag ${cls}">${label}</span>`;
   }).join('');
 
-  // Taxonomy rows
-  const taxRows = Object.entries(paper.taxonomy || {}).map(([k, v]) => {
-    const isNA = v === 'N/A' || v === 'Not specified';
-    return `<tr>
-      <td>${k}</td>
-      <td class="${isNA ? 'na-cell' : ''}">${v}</td>
-    </tr>`;
-  }).join('');
-
-  // Novel concepts
-  const novelHtml = (paper.novelConcepts?.length)
-    ? `<div class="novel-panel has-content">
-         <div class="novel-title">Novel / Out-of-Taxonomy Concepts</div>
-         <ul class="novel-list">
-           ${paper.novelConcepts.map(c => `<li>${c}</li>`).join('')}
-         </ul>
-       </div>`
-    : '';
-
-  // Proposed dimensions
-  const proposedHtml = (paper.proposedDimensions?.length)
-    ? `<div class="proposed-panel has-content">
-         <div class="proposed-title">Proposed New Taxonomy Dimensions</div>
-         <ul class="proposed-list">
-           ${paper.proposedDimensions.map(d => `
-             <li class="proposed-item">
-               <span class="proposed-dim-name">${d.name}:</span>
-               <span class="proposed-dim-val">${d.answer}</span>
-               ${d.backfill ? '<span class="backfill-badge">backfill needed</span>' : ''}
-             </li>`).join('')}
-         </ul>
-       </div>`
-    : '';
-
-  // Links
-  const links = [];
-  if (paper.arxiv)       links.push(`<a class="link-btn" href="${paper.arxiv}" target="_blank">↗ arXiv</a>`);
-  if (paper.projectPage) links.push(`<a class="link-btn" href="${paper.projectPage}" target="_blank">⬡ Project Page</a>`);
+  const novelBadge = (paper.novelConcepts?.length)
+    ? `<span class="tag tag-novel">${paper.novelConcepts.length} novel</span>` : '';
 
   return `
   <div class="paper-card" data-id="${paper.id}"
        data-tags="${(paper.tags||[]).join(',')}"
        data-search="${[paper.title, paper.authors, paper.venue, paper.tldr, ...Object.values(paper.taxonomy||{})].join(' ').toLowerCase()}"
-       style="animation-delay:${delay}ms">
+       style="animation-delay:${delay}ms"
+       onclick="openDetail('${paper.id}')">
 
-    <div class="card-header" onclick="toggleExpand('${paper.id}')">
+    <div class="card-header">
       <div class="card-meta">
         <span class="venue-badge">${paper.venue} ${paper.year}</span>
         <span class="card-date">${paper.dateAdded}</span>
       </div>
-      <a class="card-title" href="${paper.arxiv || paper.projectPage || '#'}" target="_blank"
-         onclick="event.stopPropagation()">${paper.title}</a>
+      <div class="card-title">${paper.title}</div>
       <div class="card-authors">${paper.authors}</div>
     </div>
 
     <div class="card-tldr">${paper.tldr}</div>
-    <div class="card-tags">${tagsHtml}</div>
+    <div class="card-tags">${tagsHtml}${novelBadge}</div>
 
-    <button class="card-expand-btn" id="btn-${paper.id}" onclick="toggleExpand('${paper.id}')">
-      <span>taxonomy details</span>
-      <span class="expand-arrow">▾</span>
+    <button class="card-view-btn" onclick="openDetail('${paper.id}')">
+      <span>view taxonomy details</span>
+      <span>→</span>
     </button>
-
-    <div class="taxonomy-panel" id="panel-${paper.id}">
-      <table class="taxonomy-table"><tbody>${taxRows}</tbody></table>
-      ${novelHtml}
-      ${proposedHtml}
-    </div>
-
-    ${links.length ? `<div class="card-links">${links.join('')}</div>` : ''}
   </div>`;
 }
 
-function toggleExpand(id) {
-  const panel = document.getElementById(`panel-${id}`);
-  const btn   = document.getElementById(`btn-${id}`);
-  const open  = panel.classList.toggle('open');
-  btn.classList.toggle('open', open);
+function openDetail(id) {
+  const paper = PAPERS.find(p => p.id === id);
+  if (!paper) return;
+
+  const tagMap = {
+    relightable: ['tag-relight', 'relightable'],
+    physics:     ['tag-physics', 'physics sim'],
+    editable:    ['tag-edit',    'editable'],
+    realtime:    ['tag-realtime','real-time'],
+    monocular:   ['tag-mono',    'monocular'],
+  };
+
+  const tagsHtml = (paper.tags || []).map(t => {
+    const [cls, label] = tagMap[t] || ['tag-novel', t];
+    return `<span class="tag ${cls}">${label}</span>`;
+  }).join('');
+
+  const links = [];
+  if (paper.arxiv)       links.push(`<a class="link-btn" href="${paper.arxiv}" target="_blank">↗ arXiv</a>`);
+  if (paper.projectPage) links.push(`<a class="link-btn" href="${paper.projectPage}" target="_blank">⬡ Project Page</a>`);
+
+  // Build taxonomy sections
+  const tax = paper.taxonomy || {};
+  const usedKeys = new Set();
+  let taxHtml = '';
+
+  TAX_GROUPS.forEach(group => {
+    const items = group.keys
+      .filter(k => tax[k] !== undefined)
+      .map(k => {
+        usedKeys.add(k);
+        const v = tax[k];
+        const isNA = v === 'N/A' || v === 'Not specified';
+        return `<div class="tax-item${isNA ? ' na' : ''}">
+          <span class="tax-key" style="color:${group.color}">${k}</span>
+          <span class="tax-val${isNA ? ' na-val' : ''}">${v}</span>
+        </div>`;
+      }).join('');
+    if (!items) return;
+    taxHtml += `<div class="modal-section">
+      <div class="modal-section-title" style="color:${group.color}">${group.label}</div>
+      <div class="tax-grid">${items}</div>
+    </div>`;
+  });
+
+  // Any keys not in a group (future adopted dimensions)
+  const extraItems = Object.entries(tax)
+    .filter(([k]) => !usedKeys.has(k))
+    .map(([k, v]) => {
+      const isNA = v === 'N/A' || v === 'Not specified';
+      return `<div class="tax-item${isNA ? ' na' : ''}">
+        <span class="tax-key" style="color:var(--lavender)">${k}</span>
+        <span class="tax-val${isNA ? ' na-val' : ''}">${v}</span>
+      </div>`;
+    }).join('');
+  if (extraItems) {
+    taxHtml += `<div class="modal-section">
+      <div class="modal-section-title" style="color:var(--lavender)">Additional Dimensions</div>
+      <div class="tax-grid">${extraItems}</div>
+    </div>`;
+  }
+
+  // Novel concepts
+  const novelHtml = (paper.novelConcepts?.length)
+    ? `<div class="modal-section">
+        <div class="modal-section-title" style="color:var(--pink)">Novel / Out-of-Taxonomy Concepts</div>
+        <ul class="modal-novel-list">${paper.novelConcepts.map(c => `<li>${c}</li>`).join('')}</ul>
+      </div>` : '';
+
+  // Proposed dimensions
+  const propHtml = (paper.proposedDimensions?.length)
+    ? `<div class="modal-section">
+        <div class="modal-section-title" style="color:var(--yellow)">Proposed New Taxonomy Dimensions</div>
+        <ul class="modal-proposed-list">${paper.proposedDimensions.map(d => `
+          <li class="modal-proposed-item">
+            <span style="color:var(--yellow);font-weight:600">${d.name}:</span>
+            <span style="color:var(--subtext1)">${d.answer}</span>
+            ${d.backfill ? '<span class="backfill-badge">backfill needed</span>' : ''}
+          </li>`).join('')}
+        </ul>
+      </div>` : '';
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-paper-header">
+      <div class="modal-meta-row">
+        <span class="venue-badge">${paper.venue} ${paper.year}</span>
+        <span class="modal-date">${paper.dateAdded}</span>
+        ${tagsHtml}
+      </div>
+      <div class="modal-title">${paper.title}</div>
+      <div class="modal-authors">${paper.authors}</div>
+      <div class="modal-tldr-wrap">
+        <div class="modal-tldr-label">TL;DR</div>
+        <div class="modal-tldr-text">${paper.tldr}</div>
+      </div>
+      ${links.length ? `<div class="modal-links">${links.join('')}</div>` : ''}
+    </div>
+    ${taxHtml}
+    ${novelHtml}
+    ${propHtml}
+  `;
+
+  const modal = document.getElementById('detail-modal');
+  modal.classList.add('open');
+  modal.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleModalBackdrop(e) {
+  if (e.target === document.getElementById('detail-modal')) closeDetail();
 }
 
 function render(papers) {
@@ -970,6 +1235,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial render
   render(PAPERS);
+
+  // Close modal on Escape
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
 
   // Search
   document.getElementById('search-input').addEventListener('input', applyFilters);
